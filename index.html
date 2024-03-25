@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitFood</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.0/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .details {
+      color: #86ae40;
+    }
+    .btn-primary {
+    background-color: #86ae40;
+    border-color: #86ae40;
+  }
+
+  .btn-primary:hover {
+  background-color: #638130;
+  border-color: #638130;
+}
+
+#recipeCards .card {
+  margin-bottom: 10px;
+}
+
+.container-fluid {
+  padding: 0;
+}
+
+
+.hero-section {
+  background-image: url('https://cdn.britannica.com/17/196817-159-9E487F15/vegetables.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 300px;
+  position: relative;
+}
+
+.hero-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.hero-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+}
+
+.hero-title {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.hero-subtitle {
+  font-size: 24px;
+}
+
+
+  </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container">
+        <a class="navbar-brand" href="#">
+            <img src="logo.png" alt="FitFood Logo" height="30" width="30" class="d-inline-block align-text-top">
+            FitFood
+          </a>
+          <form class="d-flex" id="searchForm">
+            <input class="form-control me-2" type="search" placeholder="Cerca" aria-label="Search" id="searchInput">
+            <button class="btn btn-outline-success" type="submit"><i class="fas fa-search"></i></button>
+          </form>          
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero-section">
+        <div class="container">
+          <div class="hero-content">
+            <h1 class="hero-title">FitFood</h1>
+            <h2 class="hero-subtitle" id="defaultSubtitle">Your Fit recipes just a click away.</h2>
+            <h2 class="hero-subtitle" id="searchSubtitle" style="display: none;">You searched for: <span id="searchQuery" style="font-weight: bold";></span></h2>                   
+          </div>
+        </div>
+      </div>
+    <div class="container mt-5">
+      <div class="row" id="recipeCards">
+        <!-- The recipe cards will be dynamically generated here -->
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-light text-center py-3 mt-5">
+    <p>FitFood &copy; 2023 | Developed by <b>ZioMark</b> using Spoonacular Api</p>
+  </footer>
+
+  <div class="modal fade" id="recipeModal" tabindex="-1" aria-labelledby="recipeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="recipeModalLabel">Recipe Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="recipeDetails"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.0/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function getRecipes(query) {
+      const apiKey = 'YOURAPIKEY';
+      const apiUrl = `https://api.spoonacular.com/recipes/complexSearch?apiKey=${apiKey}&query=${query}`;
+
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          const recipeCardsContainer = document.getElementById('recipeCards');
+          recipeCardsContainer.innerHTML = '';
+
+          // Loop through the recipes and create cards dynamically
+          data.results.forEach(recipe => {
+            const card = document.createElement('div');
+            card.classList.add('col-lg-4', 'col-md-6', 'mb-4');
+
+            const cardContent = `
+              <div class="card card-sm">
+                <img src="${recipe.image}" class="card-img-top" alt="${recipe.title}">
+                <div class="card-body">
+                  <h5 class="card-title">${recipe.title}</h5>
+                  <p class="card-text details">ID: ${recipe.id}</p>
+                  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#recipeModal" data-recipe-id="${recipe.id}">View Details</button>
+                </div>
+              </div>
+            `;
+
+            card.innerHTML = cardContent;
+            recipeCardsContainer.appendChild(card);
+          });
+        })
+        .catch(error => {
+          console.log('Error:', error);
+        });
+    }
+
+    // Function to handle form submission and search
+    function handleFormSubmit(event) {
+  event.preventDefault();
+  const searchInput = document.getElementById('searchInput');
+  const query = searchInput.value.trim();
+  getRecipes(query);
+  searchInput.value = '';
+
+  const defaultSubtitle = document.getElementById('defaultSubtitle');
+  const searchSubtitle = document.getElementById('searchSubtitle');
+  const searchQueryElement = document.getElementById('searchQuery');
+
+  if (query !== '') {
+    defaultSubtitle.style.display = 'none';
+    searchSubtitle.style.display = 'block';
+    searchQueryElement.textContent = query;
+  } else {
+    defaultSubtitle.style.display = 'block';
+    searchSubtitle.style.display = 'none';
+  }
+}
+
+
+
+    // Event listener for the search form submission
+    const searchForm = document.getElementById('searchForm');
+    searchForm.addEventListener('submit', handleFormSubmit);
+
+    // Call the function to get initial recipes when the page loads
+    getRecipes('');
+
+
+    // Function to fetch and display recipe details in the modal
+    function showRecipeDetails(recipeId) {
+      const apiKey = '7659a4fd2eda450f86dc89179669ead9';
+      const apiUrl = `https://api.spoonacular.com/recipes/${recipeId}/information?includeNutrition=false&apiKey=${apiKey}`;
+
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          const recipeDetailsContainer = document.getElementById('recipeDetails');
+
+          // Populate the recipe details in the modal
+          const recipeDetailsContent = `
+            <h2>${data.title}</h2>
+            <img src="${data.image}" alt="${data.title}" class="mb-3">
+            <h5>Summary</h5>
+            <p>${data.summary}</p>
+            <h5>Ingredients</h5>
+            <ul>
+              ${data.extendedIngredients.map(ingredient => `<li>${ingredient.original}</li>`).join('')}
+            </ul>
+            <h5>Instructions</h5>
+            <ol>
+              ${data.analyzedInstructions[0].steps.map(step => `<li>${step.step}</li>`).join('')}
+            </ol>
+          `;
+
+          recipeDetailsContainer.innerHTML = recipeDetailsContent;
+        })
+        .catch(error => {
+          console.log('Error:', error);
+        });
+    }
+
+    // Event listener for the recipe details button in each card
+    document.addEventListener('click', function(event) {
+      if (event.target.matches('.btn-primary')) {
+        const recipeId = event.target.getAttribute('data-recipe-id');
+        showRecipeDetails(recipeId);
+      }
+    });
+  </script>
+</body>
+
+</html>
