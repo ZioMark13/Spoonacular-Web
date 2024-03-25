@@ -3,7 +3,8 @@
 
 A bootstrap website using Spoonacular API for a recipe and cooking website with Search query.
 
-
+## Register your Spoonacular free account to get your API key
+https://spoonacular.com/food-api
 
 ## Screenshots
 
